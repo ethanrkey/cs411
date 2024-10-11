@@ -1,1 +1,1 @@
-CS411 course repository
+CS411 (Software Engineering) course repository
