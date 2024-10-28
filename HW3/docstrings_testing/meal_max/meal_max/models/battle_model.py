@@ -11,11 +11,26 @@ configure_logger(logger)
 
 
 class BattleModel:
+    """
+    A class to determine the battle winner between the two combatants.
+
+    Attributes: 
+        combatants (List[Meal]): The list of combatants in the battle.
+    """
 
     def __init__(self):
+        """
+        Initializes the BattleModel with an empty list.
+        """
         self.combatants: List[Meal] = []
 
     def battle(self) -> str:
+        """
+        Determines and returns the battle winner.
+
+        Raises:
+            ValueError: If there are less than 2 combatants.
+        """
         logger.info("Two meals enter, one meal leaves!")
 
         if len(self.combatants) < 2:
@@ -69,10 +84,19 @@ class BattleModel:
         return winner.meal
 
     def clear_combatants(self):
+        """
+        Clears the list of initialized combatants. 
+        """
         logger.info("Clearing the combatants list.")
         self.combatants.clear()
 
     def get_battle_score(self, combatant: Meal) -> float:
+        """
+        Calculates and returns the battle score for a given combatants.
+
+        Args:
+            combatant (Meal): The specified meal combatant to calculate score for. 
+        """
         difficulty_modifier = {"HIGH": 1, "MED": 2, "LOW": 3}
 
         # Log the calculation process
@@ -88,10 +112,22 @@ class BattleModel:
         return score
 
     def get_combatants(self) -> List[Meal]:
+        """
+        Retrieves the current list of combantants.
+        """
         logger.info("Retrieving current list of combatants.")
         return self.combatants
 
     def prep_combatant(self, combatant_data: Meal):
+        """
+        Adds meal to list of combatants if there's room.
+
+        Args:
+            combatant_data (Meal): Data of the given meal that's being added to the combatant list.
+
+        Raises:
+            ValueError: If the combantant list is already full.
+        """
         if len(self.combatants) >= 2:
             logger.error("Attempted to add combatant '%s' but combatants list is full", combatant_data.meal)
             raise ValueError("Combatant list is full, cannot add more combatants.")
