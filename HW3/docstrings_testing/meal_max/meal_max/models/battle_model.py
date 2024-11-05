@@ -26,10 +26,13 @@ class BattleModel:
 
     def battle(self) -> str:
         """
-        Determines and returns the battle winner.
+        Determines the battle winner after retrieving battle scores and computing a winner.
 
         Raises:
             ValueError: If there are less than 2 combatants.
+
+        Retuns:
+            String: the winning meal combatant
         """
         logger.info("Two meals enter, one meal leaves!")
 
@@ -92,10 +95,13 @@ class BattleModel:
 
     def get_battle_score(self, combatant: Meal) -> float:
         """
-        Calculates and returns the battle score for a given combatants.
+        Calculates the battle score for a given combatants.
 
         Args:
             combatant (Meal): The specified meal combatant to calculate score for. 
+
+        Returns:
+            float: The battle score for the passed combatant
         """
         difficulty_modifier = {"HIGH": 1, "MED": 2, "LOW": 3}
 
