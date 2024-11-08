@@ -106,7 +106,7 @@ get_meal_by_id() {
   fi
 }
 
-get_meal_by_meal_name() {
+get_meal_by_name() {
   meal_name=$1
   echo "Getting meal by name ($meal_name)..."
   response=$(curl -s -X GET "$BASE_URL/get-meal-by-name/$meal_name")
