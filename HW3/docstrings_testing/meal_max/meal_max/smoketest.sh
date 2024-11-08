@@ -106,36 +106,27 @@ get_meal_by_id() {
   fi
 }
 
+get_meal_by_meal_name() {
+  meal_name=$1
+  echo "Getting meal by name ($meal_name)..."
+  response=$(curl -s -X GET "$BASE_URL/get-meal-by-name/$meal_name")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Meal retrieved successfully by name."
+    if [ "$ECHO_JSON" = true ]; then
+      echo "Meal JSON:"
+      echo "$response" | jq .
+    fi
+  else
+    echo "Failed to get meal by name ($meal_name)."
+    exit 1
+  fi
+}
+
 ###############################################
 #
 # Battle Management
 #
 ###############################################
-
-prep_combatant() {
-  meal_name=$1
-  echo "Preparing combatant: $meal_name..."
-  response=$(curl -s -X POST "$BASE_URL/prep-combatant" -H "Content-Type: application/json" \
-    -d "{\"meal\": \"$meal_name\"}")
-  
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Combatant prepared successfully."
-  else
-    echo "Failed to prepare combatant."
-    exit 1
-  fi
-}
-
-clear_combatants() {
-  echo "Clearing all combatants..."
-  response=$(curl -s -X POST "$BASE_URL/clear-combatants")
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Combatants cleared successfully."
-  else
-    echo "Failed to clear combatants."
-    exit 1
-  fi
-}
 
 initiate_battle() {
   echo "Initiating battle between prepared combatants..."
@@ -152,6 +143,35 @@ initiate_battle() {
   fi
 }
 
+clear_combatants() {
+  echo "Clearing all combatants..."
+  response=$(curl -s -X POST "$BASE_URL/clear-combatants")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Combatants cleared successfully."
+  else
+    echo "Failed to clear combatants."
+    exit 1
+  fi
+}
+
+get_battle_score() {
+  meal_id=$1
+  echo "Calculating battle score for combatant with ID: $meal_id..."
+  response=$(curl -s -X GET "$BASE_URL/get-battle-score/$meal_id")
+
+  if echo "$response" | grep -q '"status": "success"'; then
+    score=$(echo "$response" | jq -r '.score')
+    echo "Battle score for combatant ID $meal_id: $score"
+    if [ "$ECHO_JSON" = true ]; then
+      echo "Battle Score JSON:"
+      echo "$response" | jq .
+    fi
+  else
+    echo "Failed to calculate battle score for combatant ID $meal_id."
+    exit 1
+  fi
+}
+
 get_combatants() {
   echo "Retrieving list of combatants..."
   response=$(curl -s -X GET "$BASE_URL/get-combatants")
@@ -163,6 +183,20 @@ get_combatants() {
     fi
   else
     echo "Failed to retrieve combatants."
+    exit 1
+  fi
+}
+
+prep_combatant() {
+  meal_name=$1
+  echo "Preparing combatant: $meal_name..."
+  response=$(curl -s -X POST "$BASE_URL/prep-combatant" -H "Content-Type: application/json" \
+    -d "{\"meal\": \"$meal_name\"}")
+  
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Combatant prepared successfully."
+  else
+    echo "Failed to prepare combatant."
     exit 1
   fi
 }
