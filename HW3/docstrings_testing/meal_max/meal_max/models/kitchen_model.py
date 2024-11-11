@@ -34,7 +34,7 @@ def create_meal(meal: str, cuisine: str, price: float, difficulty: str) -> None:
         Args:
             meal (str): The meal's name.
             cuisine (str): The meal's cuisine.
-            price (int): The price of the meal.
+            price (float): The price of the meal.
             difficulty (str): The meal's difficulty.
 
         Raises:
@@ -43,9 +43,9 @@ def create_meal(meal: str, cuisine: str, price: float, difficulty: str) -> None:
             sqlite3.Error: For any other database errors.
     """
     if not isinstance(price, (int, float)) or price <= 0:
-        raise ValueError(f"Invalid price: {price}. Price must be a positive number.")
+        raise ValueError(f"Invalid meal price: {price} (Price must be a positive number).")
     if difficulty not in ['LOW', 'MED', 'HIGH']:
-        raise ValueError(f"Invalid difficulty level: {difficulty}. Must be 'LOW', 'MED', or 'HIGH'.")
+        raise ValueError(f"Invalid meal difficulty: {difficulty} (Difficulty must be 'LOW', 'MED', or 'HIGH').")
 
     try:
         with get_db_connection() as conn:
@@ -58,13 +58,12 @@ def create_meal(meal: str, cuisine: str, price: float, difficulty: str) -> None:
 
             logger.info("Meal successfully added to the database: %s", meal)
 
-    except sqlite3.IntegrityError:
+    except sqlite3.IntegrityError as e:
         logger.error("Duplicate meal name: %s", meal)
-        raise ValueError(f"Meal with name '{meal}' already exists")
-
+        raise ValueError(f"Meal with name '{meal}' already exists.") from e
     except sqlite3.Error as e:
-        logger.error("Database error: %s", str(e))
-        raise e
+        logger.error("Database error while creating meal: %s", str(e))
+        raise sqlite3.Error(f"Database error: {str(e)}")
 
 def clear_meals() -> None:
     """
@@ -103,7 +102,7 @@ def delete_meal(meal_id: int) -> None:
                 deleted = cursor.fetchone()[0]
                 if deleted:
                     logger.info("Meal with ID %s has already been deleted", meal_id)
-                    raise ValueError(f"Meal with ID {meal_id} has been deleted")
+                    raise ValueError(f"Meal with ID {meal_id} has already been deleted")
             except TypeError:
                 logger.info("Meal with ID %s not found", meal_id)
                 raise ValueError(f"Meal with ID {meal_id} not found")
@@ -220,7 +219,7 @@ def get_meal_by_name(meal_name: str) -> Meal:
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, meal, cuisine, price, difficulty, deleted FROM meals WHERE meal = ?", (meal_name,))
+            cursor.execute("SELECT id, meal, cuisine, price, difficulty, deleted FROM meals WHERE meal name = ?", (meal_name,))
             row = cursor.fetchone()
 
             if row:
@@ -263,9 +262,9 @@ def update_meal_stats(meal_id: int, result: str) -> None:
                 raise ValueError(f"Meal with ID {meal_id} not found")
 
             if result == 'win':
-                cursor.execute("UPDATE meals SET battles = battles + 1, wins = wins + 1 WHERE id = ?", (meal_id,))
+                cursor.execute("UPDATE meals SET wins = wins + 1 WHERE id = ?", (meal_id,))
             elif result == 'loss':
-                cursor.execute("UPDATE meals SET battles = battles + 1 WHERE id = ?", (meal_id,))
+                cursor.execute("UPDATE meals SET wins = wins + 1 WHERE id = ?", (meal_id,))
             else:
                 raise ValueError(f"Invalid result: {result}. Expected 'win' or 'loss'.")
 

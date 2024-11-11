@@ -4,7 +4,7 @@ import sqlite3
 
 import pytest
 
-from meal_max.meal_max.models.kitchen_model import (
+from meal_max.models.kitchen_model import (
     Meal,
     create_meal,
     delete_meal,
@@ -85,18 +85,18 @@ def test_create_meal_duplicate(mock_cursor):
 def test_create_meal_invalid_difficulty():
     """Test error when trying to create a meal with an invlaid difficulty (e.g., value that is not "LOW, MEDIUM, or HIGH")"""
     # Attempt to create a meal with an invalid difficulty
-    with pytest.raises(ValueError, match="Invalid meal difficulty: invalid \(must be LOW, MEDIUM, or HIGH\)."):
+    with pytest.raises(ValueError, match="Invalid meal difficulty: invalid \(Difficulty must be 'LOW', 'MED', or 'HIGH'\)."):
         create_meal(meal="Meal Name", cuisine="Meal Type", price = 20.22, difficulty="invalid")
 
 def test_create_meal_invalid_price():
     """Test error when trying to create a meal with an invalid price (e.g., negative price)"""
 
     # Attempt to create a meal with a negative price
-    with pytest.raises(ValueError, match="Invalid meal price: -22.20 \(must be a positive float\)."):
+    with pytest.raises(ValueError, match="Invalid meal price: -20.22 \(Price must be a positive number\)."):
         create_meal(meal="Meal Name", cuisine="Meal Type", price=-20.22, difficulty="LOW")
 
     # Attempt to create a meal with a non-float price
-    with pytest.raises(ValueError, match="Invalid meal price: invalid \(must be a positive float\)."):
+    with pytest.raises(ValueError, match="Invalid meal price: invalid \(Price must be a positive number\)."):
         create_meal(meal="Meal Name", cuisine="Meal Type", price="invalid", difficulty="LOW")
 
 def test_delete_meal(mock_cursor):
@@ -193,7 +193,7 @@ def test_get_meal_by_id_bad_id(mock_cursor):
 
 def test_get_meal_by_name(mock_cursor):
     # Simulate that the meal exists (meal = "Meal Name", cuisine = "Cuisine", price = 20.22, difficulty = "LOW")
-    mock_cursor.fetchone.return_value = (1, "Meal Name", "Cuisine", 20.22, "LOW", False)
+    mock_cursor.fetchone.return_value = (1, "Meal Name", "Meal Type", 20.22, "LOW", False)
 
     # Call the function and check the result
     result = get_meal_by_name("Meal Name")
@@ -205,7 +205,7 @@ def test_get_meal_by_name(mock_cursor):
     assert result == expected_result, f"Expected {expected_result}, got {result}"
 
     # Ensure the SQL query was executed correctly
-    expected_query = normalize_whitespace("SELECT id, meal, cuisine, price, difficulty, deleted FROM meals WHERE meal = ?")
+    expected_query = normalize_whitespace("SELECT id, meal, cuisine, price, difficulty, deleted FROM meals WHERE meal name = ?")
     actual_query = normalize_whitespace(mock_cursor.execute.call_args[0][0])
 
     # Assert that the SQL query was correct
@@ -215,7 +215,7 @@ def test_get_meal_by_name(mock_cursor):
     actual_arguments = mock_cursor.execute.call_args[0][1]
 
     # Assert that the SQL query was executed with the correct arguments
-    expected_arguments = ("Meal Name")
+    expected_arguments = ("Meal Name",)
     assert actual_arguments == expected_arguments, f"The SQL query arguments did not match. Expected {expected_arguments}, got {actual_arguments}."
 
 def test_update_meal_stats(mock_cursor): #not done
@@ -226,7 +226,7 @@ def test_update_meal_stats(mock_cursor): #not done
 
     # Call the update_meal_stats function with a sample meal ID
     meal_id = 1
-    update_meal_stats(meal_id)
+    update_meal_stats(meal_id, "win")
 
     # Normalize the expected SQL query
     expected_query = normalize_whitespace("""
@@ -255,7 +255,7 @@ def test_update_meal_stats_deleted_meal(mock_cursor):
 
     # Expect a ValueError when attempting to update a deleted meal
     with pytest.raises(ValueError, match="Meal with ID 1 has been deleted"):
-        update_meal_stats(1)
+        update_meal_stats(1, "win")
 
     # Ensure that no SQL query for updating meal stats was executed
     mock_cursor.execute.assert_called_once_with("SELECT deleted FROM meals WHERE id = ?", (1,))
